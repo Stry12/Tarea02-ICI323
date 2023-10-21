@@ -59,10 +59,6 @@ int main(int argc, char* argv[]) {
     bool noOptionsProvided = true;
     int numthreads = 1;
     std::string filename = "";
-    std::vector<std::string> textInMemory;
-    std::string line;
-    int inicio = 0;
-    int avance;
 
     struct option longOptions[] = {
         {"file", required_argument, nullptr, 'f'},
@@ -97,8 +93,9 @@ int main(int argc, char* argv[]) {
     } else {
         if (filename.empty()) {
             std::cerr << "No se proporcionó un nombre de archivo (-f)." << std::endl;
-            return EXIT_FAILURE;            std::string line;
+            return EXIT_FAILURE;
         }
+        std::vector<std::string> textInMemory;
         try {
             std::ifstream file(filename);
             if (!file) {
@@ -106,6 +103,7 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
 
+            std::string line;
             while (std::getline(file, line)) {
                 textInMemory.push_back(line);
             }
@@ -116,8 +114,9 @@ int main(int argc, char* argv[]) {
         }
 
         std::cout << "Procesando con " << numthreads << " threads." << std::endl;
-        
-        avance = textInMemory.size() / numthreads;
+        int inicio = 0;
+        int avance = textInMemory.size() / numthreads;
+
         std::vector<std::thread> threads;
 
         for (int i = 0; i < numthreads; i++) {
