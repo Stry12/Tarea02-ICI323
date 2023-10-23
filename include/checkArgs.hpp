@@ -1,101 +1,57 @@
-#ifndef _CHECKARGS_H_
-#define _CHECKARGS_H_
+#ifndef _checkArgs_HPP_
+#define _checkArgs_HPP_
 
-#include <unistd.h>
+#include "global.hh"
 
-extern char *optarg;
-extern int optind, opterr, optopt;
-
-class checkArgs {
+class ArgsHandler {
 private:
-	// 1) Modificar esta sección
-	const std::string optString = "n:t:l:h";
-	
-	const std::string opciones = "-n tam_problema -t threads -l letra_a_buscar [-h]";
+    int numThreads;
+    std::string filename;
+    bool showHelp;
 
-	const std::string descripcion  = "Descripción:\n"
-		                             "\t-n   Tamaño del problema.\n"
-									 "\t-t   Cantidad de threads a utilizar.\n"
-									 "\t-l   Letra a buscar y contabilizar.\n"
-									 "\t-h   Muestra esta ayuda y termina.\n";
-	
-	typedef struct args_t{
-		uint32_t tamProblema;
-		uint32_t numThreads;
-		uint8_t  letra;
-	} args_t;
-	
-	// 2) Modificar constructor
-	// 3) Modificar ciclo "getopt" en método checkArgs::getArgs()
-	// 4) Recuerde que para compilar nuevamente, y por tratarse
-	//    de un archivo header, debe hacer primero un make clean
-	
-	args_t  parametros;
-	
-	int argc;
-	char **argv;
-
-	
 public:
-	checkArgs(int _argc , char **_argv);
-	~checkArgs();
-	args_t getArgs();
-	
-private:
-	void printUsage();
-	
-	
+    ArgsHandler(int argc, char **argv);
+    int getNumThreads() const;
+    std::string getFilename() const;
+    bool shouldShowHelp() const;
 };
 
-checkArgs::checkArgs(int _argc , char **_argv){
-	parametros.tamProblema = 0;
-	parametros.numThreads  = 0;
-	parametros.letra       = 0;
+ArgsHandler::ArgsHandler(int argc, char **argv) : numThreads(1), showHelp(false) {
+    int opt;
+    struct option longOptions[] = {
+        {"file", required_argument, nullptr, 'f'},
+        {"threads", required_argument, nullptr, 't'},
+        {"help", no_argument, nullptr, 'h'},
+        {0, 0, 0, 0}
+    };
 
-	argc = _argc;
-	argv = _argv;
-	
+    while ((opt = getopt_long(argc, argv, "f:t:h:", longOptions, NULL)) != -1) {
+        switch (opt) {
+            case 'f':
+                filename = optarg;
+                break;
+            case 't':
+                numThreads = atoi(optarg);
+                break;
+            case 'h':
+                showHelp = true;
+                break;
+            default:
+                showHelp = true;
+        }
+    }
 }
 
-checkArgs::~checkArgs(){
-	
+int ArgsHandler::getNumThreads() const {
+    return numThreads;
 }
 
-checkArgs::args_t checkArgs::getArgs(){
-	int opcion;
-	
-	while ((opcion = getopt (argc, argv, optString.c_str())) != -1){
-		switch (opcion) {
-			case 'n':
-					parametros.tamProblema = atoi(optarg);
-					break;
-			case 't':
-					parametros.numThreads = atoi(optarg);
-					break;
-			case 'l':
-					parametros.letra = *(optarg);
-					break;
-			case 'h':
-			default:
-					printUsage();
-					exit(EXIT_FAILURE);
-		}
-	}
-
-	if ( parametros.tamProblema == 0 ||
-		 parametros.numThreads  == 0 || parametros.letra == 0){
-		printUsage();
-		exit(EXIT_FAILURE);
-	}
-	
-	return(parametros);
+std::string ArgsHandler::getFilename() const {
+    return filename;
 }
 
-void checkArgs::printUsage(){
-	std::cout << "Uso: " <<
-		argv[0] << " " << opciones << " " << descripcion << std::endl;
+bool ArgsHandler::shouldShowHelp() const {
+    return showHelp;
 }
-
-
 
 #endif
