@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
 
     if (filename.empty()) {
         std::cerr << "No se proporcionó un nombre de archivo (-f)." << std::endl;
+        std::cout << "Modo de uso: ./histograma_mt --threads N --file FILENAME [--help]\n--threads: cantidad de threads a utilizar. Si es 1, entonces ejecuta la versión secuencial.\n--file: archivo a procesar.\n--help: muestra este mensaje y termina." << std::endl;
         return EXIT_FAILURE;
     }
 
